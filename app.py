@@ -10,7 +10,11 @@ import requests
 from streamlit_option_menu import option_menu
 import os
 
-# Streamlit page configuration (must be the first Streamlit command)
+# Configure NLTK to use local data
+nltk_data_path = './nltk_data'  # Local nltk data directory
+nltk.data.path = [nltk_data_path] + nltk.data.path
+
+# Streamlit page configuration
 st.set_page_config(
     page_title="SMS Spam Classifier",
     page_icon="📧",
@@ -20,14 +24,11 @@ st.set_page_config(
 # Initialize PorterStemmer
 ps = PorterStemmer()
 
-# Check if the NLTK data is already downloaded; if not, download it
-nltk_data_path = './nltk_data'  # Local nltk data directory
+# Ensure necessary NLTK data is available
 if not os.path.exists(nltk_data_path):
     os.makedirs(nltk_data_path)
-nltk.data.path.append(nltk_data_path)
-
-# Ensure Punkt data is downloaded locally
 nltk.download('punkt', download_dir=nltk_data_path)
+nltk.download('stopwords', download_dir=nltk_data_path)
 
 # Function to preprocess text
 def transform_text(text):
@@ -91,16 +92,19 @@ if selected == "Home":
         if not input_sms.strip():
             st.error("❌ Please enter a valid SMS!")
         else:
-            # Preprocess and predict
-            transformed_sms = transform_text(input_sms)
-            vector_input = tfidf.transform([transformed_sms])
-            result = model.predict(vector_input)[0]
+            try:
+                # Preprocess and predict
+                transformed_sms = transform_text(input_sms)
+                vector_input = tfidf.transform([transformed_sms])
+                result = model.predict(vector_input)[0]
 
-            # Display results
-            if result == 1:
-                st.success("📩 **Spam Message**")
-            else:
-                st.success("📨 **Not Spam Message**")
+                # Display results
+                if result == 1:
+                    st.success("📩 **Spam Message**")
+                else:
+                    st.success("📨 **Not Spam Message**")
+            except Exception as e:
+                st.error(f"⚠️ An error occurred: {e}")
 
 # About Tab
 elif selected == "About":
@@ -126,4 +130,3 @@ elif selected == "Feedback":
     feedback = st.text_area("Write your feedback here:")
     if st.button("Submit Feedback"):
         st.success("Thank you for your feedback!")
-
