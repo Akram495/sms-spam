@@ -1,0 +1,6 @@
+streamlit
+scikit-learn
+nltk
+streamlit-lottie
+streamlit-option-menu
+requests
