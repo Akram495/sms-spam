@@ -1,34 +1,26 @@
-
-
-import nltk
 import os
-
-# Set the NLTK data path manually
-nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
-nltk.data.path.append(nltk_data_path)
-
-# Download necessary NLTK resources
-nltk.download('punkt', download_dir=nltk_data_path)
-nltk.download('stopwords', download_dir=nltk_data_path)
-
-
 import streamlit as st
 import pickle
 import string
-from nltk.corpus import stopwords
 import nltk
+from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+
+# ✅ Fix: Ensure Streamlit Cloud finds the manually uploaded `nltk_data` directory
+nltk_data_path = os.path.join(os.path.dirname(__file__), "nltk_data")
+nltk.data.path.append(nltk_data_path)
 
 # Initialize PorterStemmer
 ps = PorterStemmer()
 
-# Function to preprocess text
+# ✅ Fix: Replaced `nltk.word_tokenize()` with `split()`
 def transform_text(text):
     text = text.lower()
-    text = nltk.word_tokenize(text)
+    text = text.split()  # ✅ Uses built-in Python tokenizer (avoiding `punkt` issues)
+
     y = []
     for i in text:
-        if i.isalnum():
+        if i.isalnum():  # Keep only alphanumeric words
             y.append(i)
 
     text = y[:]
@@ -46,9 +38,12 @@ def transform_text(text):
 
     return " ".join(y)
 
-# Load the vectorizer and model
-tfidf = pickle.load(open('vectorizer (3).pkl', 'rb'))
-model = pickle.load(open('model (1).pkl', 'rb'))
+# ✅ Load the vectorizer and model safely
+try:
+    tfidf = pickle.load(open('vectorizer (3).pkl', 'rb'))
+    model = pickle.load(open('model (1).pkl', 'rb'))
+except Exception as e:
+    st.error(f"⚠️ Error loading model: {e}")
 
 # Streamlit page configuration
 st.set_page_config(
@@ -95,16 +90,19 @@ if st.button("🔍 Predict"):
     if not input_sms.strip():
         st.error("❌ Please enter a valid SMS!")
     else:
-        # Preprocess and predict
-        transformed_sms = transform_text(input_sms)
-        vector_input = tfidf.transform([transformed_sms])
-        result = model.predict(vector_input)[0]
+        try:
+            # Preprocess and predict
+            transformed_sms = transform_text(input_sms)
+            vector_input = tfidf.transform([transformed_sms])
+            result = model.predict(vector_input)[0]
 
-        # Display results
-        if result == 1:
-            st.success("📩 **Spam Message**")
-        else:
-            st.success("📨 **Not Spam Message**")
+            # Display results
+            if result == 1:
+                st.success("📩 **Spam Message**")
+            else:
+                st.success("📨 **Not Spam Message**")
+        except Exception as e:
+            st.error(f"⚠️ Prediction error: {e}")
 
 # Add footer or explanation
 st.markdown("---")
