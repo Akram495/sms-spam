@@ -4,11 +4,11 @@ import pickle
 import string
 from nltk.corpus import stopwords
 import nltk
-nltk.download('punkt')
 from nltk.stem.porter import PorterStemmer
 from streamlit_lottie import st_lottie
 import requests
 from streamlit_option_menu import option_menu
+import os
 
 # Streamlit page configuration (must be the first Streamlit command)
 st.set_page_config(
@@ -19,13 +19,15 @@ st.set_page_config(
 
 # Initialize PorterStemmer
 ps = PorterStemmer()
-import nltk
-import os
 
 # Check if the NLTK data is already downloaded; if not, download it
-if not os.path.exists(os.path.join(nltk.data.find('tokenizers'), 'punkt')):
-    nltk.download('punkt')
+nltk_data_path = './nltk_data'  # Local nltk data directory
+if not os.path.exists(nltk_data_path):
+    os.makedirs(nltk_data_path)
+nltk.data.path.append(nltk_data_path)
 
+# Ensure Punkt data is downloaded locally
+nltk.download('punkt', download_dir=nltk_data_path)
 
 # Function to preprocess text
 def transform_text(text):
@@ -35,11 +37,9 @@ def transform_text(text):
     y = [ps.stem(i) for i in y if i not in stopwords.words('english')]
     return " ".join(y)
 
-
 # Load vectorizer and model
 tfidf = pickle.load(open('vectorizer (3).pkl', 'rb'))
 model = pickle.load(open('model (1).pkl', 'rb'))
-
 
 # Load Lottie animation
 def load_lottieurl(url):
@@ -48,9 +48,7 @@ def load_lottieurl(url):
         return None
     return r.json()
 
-
 lottie_animation = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_touohxv0.json")
-
 
 # Splash Screen
 def show_splash_screen():
@@ -66,7 +64,6 @@ def show_splash_screen():
     )
     time.sleep(3)
     splash.empty()
-
 
 show_splash_screen()
 
