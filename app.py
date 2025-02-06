@@ -19,6 +19,12 @@ st.set_page_config(
 
 # Initialize PorterStemmer
 ps = PorterStemmer()
+import nltk
+import os
+
+# Check if the NLTK data is already downloaded; if not, download it
+if not os.path.exists(os.path.join(nltk.data.find('tokenizers'), 'punkt')):
+    nltk.download('punkt')
 
 
 # Function to preprocess text
