@@ -1,4 +1,3 @@
-import setup  # This will download necessary NLTK files
 
 
 import nltk
