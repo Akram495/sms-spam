@@ -25,10 +25,10 @@ st.set_page_config(
 ps = PorterStemmer()
 
 # Ensure necessary NLTK data is available
-if not os.path.exists(nltk_data_path):
-    os.makedirs(nltk_data_path)
-nltk.download('punkt', download_dir=nltk_data_path)
-nltk.download('stopwords', download_dir=nltk_data_path)
+if not os.path.exists(os.path.join(nltk_data_path, "tokenizers", "punkt")):
+    nltk.download('punkt', download_dir=nltk_data_path)
+if not os.path.exists(os.path.join(nltk_data_path, "corpora", "stopwords")):
+    nltk.download('stopwords', download_dir=nltk_data_path)
 
 # Function to preprocess text
 def transform_text(text):
@@ -39,8 +39,11 @@ def transform_text(text):
     return " ".join(y)
 
 # Load vectorizer and model
-tfidf = pickle.load(open('vectorizer (3).pkl', 'rb'))
-model = pickle.load(open('model (1).pkl', 'rb'))
+try:
+    tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
+    model = pickle.load(open('model.pkl', 'rb'))
+except FileNotFoundError:
+    st.error("Model or vectorizer files not found! Make sure 'vectorizer.pkl' and 'model.pkl' are in the same directory as this script.")
 
 # Load Lottie animation
 def load_lottieurl(url):
